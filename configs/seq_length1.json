@@ -1,12 +1,12 @@
 {
     "method": "grid",
-    "name": "optimizer",
-    "description": "Comparing optimizer speeds",
-    "run_cap": 8,
+    "name": "seq_length1",
+    "description": "Comparing speeds at vastly different sequence lengths.",
+    "run_cap": 12,
     "parameters": {
         "per_device_train_batch_size": {
             "values": [
-                128
+                64
             ]
         },
         "mixed_precision": {
@@ -16,12 +16,14 @@
         },
         "optim": {
             "values": [
-                "adamw_torch",
-                "adamw_bnb_8bit"
+                "adamw_torch"
             ]
         },
-        "sequence_length": {
+        "max_seq_length": {
             "values": [
+                64,
+                128,
+                256,
                 512
             ]
         },

@@ -1,12 +1,10 @@
 {
-    "method": "grid",
-    "name": "optimizer",
-    "description": "Comparing optimizer speeds",
-    "run_cap": 8,
+    "method": "random",
+    "run_cap": 16,
     "parameters": {
         "per_device_train_batch_size": {
             "values": [
-                128
+                64
             ]
         },
         "mixed_precision": {
@@ -16,19 +14,22 @@
         },
         "optim": {
             "values": [
-                "adamw_torch",
-                "adamw_bnb_8bit"
+                "adamw_torch"
             ]
         },
         "sequence_length": {
             "values": [
-                512
+                256
             ]
         },
         "model_name_or_path": {
             "values": [
                 "roberta-base"
             ]
+        },
+        "dataloader_num_workers": {
+            "min": 0,
+            "max": 12
         }
     }
 }

@@ -1,8 +1,8 @@
 {
     "method": "grid",
-    "name": "optimizer",
-    "description": "Comparing optimizer speeds",
-    "run_cap": 8,
+    "name": "seq_length2",
+    "description": "Comparing how the divisibility of the sequence length affects the training speed.",
+    "run_cap": 50,
     "parameters": {
         "per_device_train_batch_size": {
             "values": [
@@ -16,14 +16,12 @@
         },
         "optim": {
             "values": [
-                "adamw_torch",
-                "adamw_bnb_8bit"
+                "adamw_torch"
             ]
         },
-        "sequence_length": {
-            "values": [
-                512
-            ]
+        "max_seq_length": {
+            "min": 240,
+            "max": 259
         },
         "model_name_or_path": {
             "values": [

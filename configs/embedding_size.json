@@ -1,8 +1,8 @@
 {
     "method": "grid",
-    "name": "optimizer",
-    "description": "Comparing optimizer speeds",
-    "run_cap": 8,
+    "name": "embedding-size",
+    "description": "Comparing divisibility of embedding size with speed",
+    "run_cap": 20,
     "parameters": {
         "per_device_train_batch_size": {
             "values": [
@@ -16,8 +16,7 @@
         },
         "optim": {
             "values": [
-                "adamw_torch",
-                "adamw_bnb_8bit"
+                "adamw_torch"
             ]
         },
         "sequence_length": {
@@ -28,6 +27,15 @@
         "model_name_or_path": {
             "values": [
                 "roberta-base"
+            ]
+        },
+        "resize_embeddings": {
+            "values": [
+                null,
+                8,
+                16,
+                64,
+                128
             ]
         }
     }
