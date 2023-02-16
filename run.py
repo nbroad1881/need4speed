@@ -57,7 +57,7 @@ def model_init(resize_embeddings, model_name_or_path):
         model_name_or_path, num_labels=2
     )
 
-    if resize_embeddings is not None:
+    if resize_embeddings > 0:
         num_embeds = model.get_input_embeddings().weight.data.size(0)
         if num_embeds % resize_embeddings != 0:
             model.resize_token_embeddings(

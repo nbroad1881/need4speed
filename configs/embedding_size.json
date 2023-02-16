@@ -31,11 +31,11 @@
         },
         "resize_embeddings": {
             "values": [
-                null,
+                0,
+                3,
                 8,
                 16,
-                64,
-                128
+                64
             ]
         }
     }
