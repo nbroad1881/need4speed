@@ -85,7 +85,6 @@ class Need4SpeedCallback(TrainerCallback):
             and (self.counter > 10)
         ):
             self.start_timer = time.time()
-            print(self.start_timer)
 
     def on_step_end(self, args, state, control, **kwargs):
         if self.start_timer is not None:
