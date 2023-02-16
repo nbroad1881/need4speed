@@ -1,0 +1,32 @@
+{
+    "method": "random",
+    "run_cap": 10,
+    "parameters": {
+        "per_device_train_batch_size": {
+            "values": [
+                64
+            ]
+        },
+        "mixed_precision": {
+            "values": [
+                "fp16"
+            ]
+        },
+        "optim": {
+            "values": [
+                "adamw_torch",
+                "adamw_bnb_8bit"
+            ]
+        },
+        "sequence_length": {
+            "values": [
+                512
+            ]
+        },
+        "model_name_or_path": {
+            "values": [
+                "roberta-base"
+            ]
+        }
+    }
+}
