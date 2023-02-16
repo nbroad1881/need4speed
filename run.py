@@ -177,11 +177,10 @@ def main(config_path: str, n: int = 1):
     with open(config_path) as f:
         sweep_config = json.load(f)
 
-    sweep_id = wandb.sweep(sweep_config, project="need4speed")
-
     set_seed(42)
 
     for _ in range(n):
+        sweep_id = wandb.sweep(sweep_config, project="need4speed")
         wandb.agent(sweep_id, wandb_train_fn)
 
 
