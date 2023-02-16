@@ -136,7 +136,9 @@ def wandb_train_fn():
         elif config.get("mixed_precision", "fp32") == "bf16":
             sweep_parameters["bf16"] = True
 
-        tokenizer = AutoTokenizer.from_pretrained(config.get("model_name_or_path", "roberta-base"))
+        tokenizer = AutoTokenizer.from_pretrained(
+            config.get("model_name_or_path", "roberta-base")
+        )
 
         training_args = TrainingArguments(
             f"sweeps/wandb-sweep-{wandb.run.id}",
@@ -166,7 +168,11 @@ def wandb_train_fn():
         trainer.save_model()
 
 
-def main(config_path:str):
+def main(config_path: str, n: int = 1):
+    """
+    Run a sweep with the given config file.
+    Repeat `n` times.
+    """
 
     with open(config_path) as f:
         sweep_config = json.load(f)
@@ -174,7 +180,9 @@ def main(config_path:str):
     sweep_id = wandb.sweep(sweep_config, project="need4speed")
 
     set_seed(42)
-    wandb.agent(sweep_id, wandb_train_fn)
+
+    for _ in range(n):
+        wandb.agent(sweep_id, wandb_train_fn)
 
 
 if __name__ == "__main__":
