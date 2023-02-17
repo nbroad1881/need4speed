@@ -17,7 +17,7 @@
                 "adamw_torch"
             ]
         },
-        "sequence_length": {
+        "max_seq_length": {
             "values": [
                 256
             ]
