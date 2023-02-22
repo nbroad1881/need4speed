@@ -75,6 +75,7 @@ class Need4SpeedCallback(TrainerCallback):
 
     def on_epoch_begin(self, args, state, control, **kwargs):
         self.epoch_start = time.time()
+        print(kwargs["model"].get_input_embeddings().weight.shape)
 
     def on_step_begin(self, args, state, control, **kwargs):
         self.counter += 1
