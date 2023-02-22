@@ -16,11 +16,32 @@ from transformers import (
     AutoModelForSequenceClassification,
     TrainerCallback,
     default_data_collator,
+    DataCollatorWithPadding,
 )
 
 
 warnings.simplefilter("ignore")
 logging.disable(logging.WARNING)
+
+DEFAULT = {
+    "per_device_train_batch_size": 8,
+    "tf32": False,
+    "dataloader_num_workers": 0,
+    "dataloader_pin_memory": True,
+    "group_by_length": False,
+    "gradient_checkpointing": False,
+    "torch_compile": False,
+    "optim": "adamw_torch",
+    "mixed_precision": "fp32",
+    "fp16": False,
+    "bf16": False,
+    "model_name_or_path": "roberta-base",
+    "max_seq_length": 256,
+    "varied_lengths": False,
+    "pad_to_multiple_of": None,
+    "padding": "longest",
+    "resize_embeddings": 0,
+}
 
 
 def create_dataset(num_samples, max_seq_length, varied_lengths=False):
@@ -75,6 +96,7 @@ class Need4SpeedCallback(TrainerCallback):
 
     def on_epoch_begin(self, args, state, control, **kwargs):
         self.epoch_start = time.time()
+        print(kwargs["model"].get_input_embeddings().weight.data.shape)
 
     def on_step_begin(self, args, state, control, **kwargs):
         self.counter += 1
@@ -113,32 +135,47 @@ def wandb_train_fn():
 
         config = wandb.config
 
+        params = [
+            "per_device_train_batch_size",
+            "tf32",
+            "dataloader_num_workers",
+            "dataloader_pin_memory",
+            "group_by_length",
+            "gradient_checkpointing",
+            "torch_compile",
+            "optim",
+        ]
         sweep_parameters = {
-            "per_device_train_batch_size": config.get("per_device_train_batch_size", 8),
-            "tf32": config.get("tf32", False),
-            "dataloader_num_workers": config.get("dataloader_num_workers", 0),
-            "dataloader_pin_memory": config.get("dataloader_pin_memory", True),
-            "group_by_length": config.get("group_by_length", False),
-            "gradient_checkpointing": config.get("gradient_checkpointing", False),
-            "torch_compile": config.get("torch_compile", False),
-            "optim": config.get("optim", "adamw_torch"),
+            param: config.get(param, DEFAULT[param]) for param in params
         }
 
         ds = create_dataset(
             num_samples=10_000,
             max_seq_length=config.get("max_seq_length", 256),
-            varied_lengths=False,
+            varied_lengths=config.get("varied_lengths", False),
         )
 
         sweep_parameters["fp16"] = False
-        if config.get("mixed_precision", "fp32") == "fp16":
+        if config.get("mixed_precision", DEFAULT["mixed_precision"]) == "fp16":
             sweep_parameters["fp16"] = True
-        elif config.get("mixed_precision", "fp32") == "bf16":
+        elif config.get("mixed_precision", DEFAULT["mixed_precision"]) == "bf16":
             sweep_parameters["bf16"] = True
 
         tokenizer = AutoTokenizer.from_pretrained(
-            config.get("model_name_or_path", "roberta-base")
+            config.get("model_name_or_path", DEFAULT["model_name_or_path"])
         )
+
+        if config.get("varied_lengths", False):
+
+            data_collator = DataCollatorWithPadding(
+                tokenizer=tokenizer,
+                pad_to_multiple_of=config.get("pad_to_multiple_of", DEFAULT["pad_to_multiple_of"]),
+                max_length=config.get("max_seq_length", DEFAULT["max_seq_length"]),
+                padding=config.get("padding", DEFAULT["padding"]),
+            )
+
+        else:
+            data_collator = default_data_collator
 
         training_args = TrainingArguments(
             f"sweeps/wandb-sweep-{wandb.run.id}",
@@ -151,16 +188,18 @@ def wandb_train_fn():
             report_to="wandb",
         )
 
+        _model_init = partial(
+                model_init,
+                resize_embeddings=config.get("resize_embeddings", DEFAULT["resize_embeddings"]),
+                model_name_or_path=config.get("model_name_or_path", DEFAULT["model_name_or_path"]),
+            )
+
         trainer = Trainer(
             args=training_args,
             tokenizer=tokenizer,
             train_dataset=ds,
-            model_init=partial(
-                model_init,
-                resize_embeddings=config.get("resize_embeddings", None),
-                model_name_or_path=config.get("model_name_or_path", "roberta-base"),
-            ),
-            data_collator=default_data_collator,
+            model_init=_model_init,
+            data_collator=data_collator,
             callbacks=[Need4SpeedCallback()],
         )
 
