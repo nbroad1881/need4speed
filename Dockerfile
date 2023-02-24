@@ -33,4 +33,6 @@ RUN wget \
 
 RUN conda init bash
 
+COPY requirements.txt requirements.txt
+
 RUN pip install -r requirements.txt
