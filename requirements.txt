@@ -1,0 +1,5 @@
+transformers==4.26.1
+wandb==0.13.10
+fire==0.5.0
+datasets==2.10.0
+bitsandbytes==0.37.0
