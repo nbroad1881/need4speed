@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import List, Union
 import warnings
@@ -100,7 +101,6 @@ class Need4SpeedCallback(TrainerCallback):
 
     def on_epoch_begin(self, args, state, control, **kwargs):
         self.epoch_start = time.time()
-        print(kwargs["model"].get_input_embeddings().weight.shape)
 
     def on_step_begin(self, args, state, control, **kwargs):
         self.counter += 1
@@ -216,6 +216,8 @@ def main(config_path: Union[str, List[str]], n: int = 1):
     Repeat `n` times.
     """
 
+    sweep_start_time = datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S")
+
     if config_path == "all":
         config_path = Path("configs").glob("*.yaml")
 
@@ -229,6 +231,8 @@ def main(config_path: Union[str, List[str]], n: int = 1):
             sweep_config = yaml.safe_load(f)
 
         set_seed(42)
+
+        sweep_config["sweep_start_time"] = sweep_start_time
 
         for _ in range(n):
             sweep_id = wandb.sweep(sweep_config, project="need4speed")
