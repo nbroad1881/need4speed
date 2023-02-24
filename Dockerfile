@@ -31,10 +31,15 @@ RUN wget \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
-RUN conda init
+RUN conda init bash
 
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
 
-RUN bash
+RUN pip install --upgrade numpy
+
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN pip install --pre torch --extra-index-url https://download.pytorch.org/whl/nightly/cu117
+
+WORKDIR /workspace
