@@ -31,8 +31,10 @@ RUN wget \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
-RUN conda init bash
+RUN conda init
 
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
+
+RUN bash
