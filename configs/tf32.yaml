@@ -1,0 +1,24 @@
+method: grid
+name: tf32
+description: tf32 vs not
+run_cap: 2
+parameters:
+  per_device_train_batch_size:
+    values:
+    - 128
+  mixed_precision:
+    values:
+    - fp16
+  optim:
+    values:
+    - adamw_torch
+  max_seq_length:
+    values:
+    - 512
+  model_name_or_path:
+    values:
+    - roberta-base
+  tf32:
+    values:
+    - yes
+    - no
