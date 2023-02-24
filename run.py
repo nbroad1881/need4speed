@@ -1,13 +1,15 @@
 import time
+from pathlib import Path
+from typing import List, Union
 import warnings
 import logging
-import json
+import yaml
 from functools import partial
 
 import fire
 import wandb
 import numpy as np
-from datasets import load_dataset, Dataset
+from datasets import Dataset
 from transformers import (
     Trainer,
     TrainingArguments,
@@ -42,6 +44,8 @@ DEFAULT = {
     "padding": "longest",
     "resize_embeddings": 0,
 }
+
+NUM_SAMPLES = 10_000
 
 
 def create_dataset(num_samples, max_seq_length, varied_lengths=False):
@@ -150,9 +154,9 @@ def wandb_train_fn():
         }
 
         ds = create_dataset(
-            num_samples=10_000,
-            max_seq_length=config.get("max_seq_length", 256),
-            varied_lengths=config.get("varied_lengths", False),
+            num_samples=NUM_SAMPLES,
+            max_seq_length=config.get("max_seq_length", DEFAULT["max_seq_length"]),
+            varied_lengths=config.get("varied_lengths", DEFAULT["varied_lengths"]),
         )
 
         sweep_parameters["fp16"] = False
@@ -204,23 +208,31 @@ def wandb_train_fn():
         )
 
         trainer.train()
-        trainer.save_model()
 
 
-def main(config_path: str, n: int = 1):
+def main(config_path: Union[str, List[str]], n: int = 1):
     """
     Run a sweep with the given config file.
     Repeat `n` times.
     """
 
-    with open(config_path) as f:
-        sweep_config = json.load(f)
+    if config_path == "all":
+        config_path = Path("configs").glob("*.yaml")
 
-    set_seed(42)
+    elif isinstance(config_path, str):
 
-    for _ in range(n):
-        sweep_id = wandb.sweep(sweep_config, project="need4speed")
-        wandb.agent(sweep_id, wandb_train_fn)
+        config_path = [config_path]
+
+    for config_path in config_path:
+        
+        with open(config_path) as f:
+            sweep_config = yaml.safe_load(f)
+
+        set_seed(42)
+
+        for _ in range(n):
+            sweep_id = wandb.sweep(sweep_config, project="need4speed")
+            wandb.agent(sweep_id, wandb_train_fn)
 
 
 if __name__ == "__main__":
